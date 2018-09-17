@@ -52,6 +52,29 @@ let lazyMapObserver = new IntersectionObserver( entries => {
   })
 });
 
+let setLazyLoadImage = () => {
+  let lazyImages = [].slice.call(document.querySelectorAll('img.lazy-img'));
+
+  if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
+    lazyImages.forEach(lazyImage => lazyImageObserver.observe(lazyImage));
+  }  else {
+    console.log('~~~~~~~~~~~~~~~~~ no IntersectionObserver ~~~~~~~~~~~~~~~~~');
+    return;
+  }
+}
+
+let lazyImageObserver = new IntersectionObserver( entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      let lazyImage = entry.target;
+      lazyImage.src = lazyImage.dataset.src;
+      // lazyImage.srcset = lazyImage.dataset.srcset;
+      lazyImage.classList.remove('lazy-img');
+      lazyImageObserver.unobserve(lazyImage);
+    }
+  });
+});
+
 /**
  * Get current restaurant from page URL.
  */
@@ -98,11 +121,12 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   address.setAttribute('aria-label','restaurant address');
   address.innerHTML = restaurant.address;
 
+  // name.append(createImg(restaurant));
   const image = document.getElementById('restaurant-img');
   const defaultImage = DBHelper.imageUrlForRestaurant(restaurant);
   const withoutExtensions = defaultImage.replace(/\.[^/.]+$/, '');
   image.alt = `${restaurant.name} profile photo`;
-  image.dataset.src = `${withoutExtensions}.jpg`;
+  image.dataset.src = `${withoutExtensions}.webp`;
   image.dataset.srcset = `${withoutExtensions}_250.webp 250w, ${withoutExtensions}_150.webp 150w`;
   image.classList.add('lazy-img');
 
@@ -118,28 +142,6 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   fillReviewsHTML();
 }
 
-let setLazyLoadImage = () => {
-  let lazyImages = [].slice.call(document.querySelectorAll('img.lazy-img'));
-
-  if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
-    lazyImages.forEach(lazyImage => lazyImageObserver.observe(lazyImage));
-  }  else {
-    console.log('~~~~~~~~~~~~~~~~~ no IntersectionObserver ~~~~~~~~~~~~~~~~~');
-    return;
-  }
-}
-
-let lazyImageObserver = new IntersectionObserver( entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      let lazyImage = entry.target;
-      lazyImage.src = lazyImage.dataset.src;
-      // lazyImage.srcset = lazyImage.dataset.srcset;
-      lazyImage.classList.remove('lazy-img');
-      lazyImageObserver.unobserve(lazyImage);
-    }
-  });
-});
 
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
@@ -191,20 +193,6 @@ fillReviewsHTML = () => {
   container.appendChild(ul);
 }
 
-let createImg = (restaurant) => {
-  const image = document.createElement('img');
-  image.className = 'restaurant-img lazy-img';
-  image.alt = `${restaurant.name} profile photo`;
-
-  const defaultImage = DBHelper.imageUrlForRestaurant(restaurant);
-  if (defaultImage) {
-    const withoutExtensions = defaultImage.replace(/\.[^/.]+$/, '');
-    image.dataset.src = `${withoutExtensions}.jpg`;
-    image.dataset.srcset = `${withoutExtensions}_250.webp 250w, ${withoutExtensions}_150.webp 150w`;
-    image.classList.add('lazy-img');
-  }
-  return image;
-}
 
 
 /**
