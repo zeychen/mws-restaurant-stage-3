@@ -7,70 +7,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
       console.error(error);
     } else {
       setLazyLoadMap();
-    }
-  });
-});
-/**
- * Initialize Google map, called from HTML.
- */
-initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
       fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
-}
-
-let setLazyLoadMap = () => {
-  let lazyMap = document.getElementById('map');
-
-  if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
-    lazyMapObserver.observe(lazyMap);
-  }  else {
-    console.log('~~~~~~~~~~~~~~~~~ no IntersectionObserver ~~~~~~~~~~~~~~~~~');
-    return;
-  }
-}
-
-let lazyMapObserver = new IntersectionObserver( entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-    let lazyMap = entry.target;
-    var mapsJS = document.createElement('script');
-    mapsJS.src = 'https://maps.googleapis.com/maps/api/js?callback=initMap&key=AIzaSyDEwOJQAdsxaQFqXkFTvxAWQaOkF_j4Lo8';
-    document.getElementsByTagName('head')[0].appendChild(mapsJS)
-    lazyMapObserver.unobserve(lazyMap);
-  }
-  })
-});
-
-let setLazyLoadImage = () => {
-  let lazyImages = [].slice.call(document.querySelectorAll('img.lazy-img'));
-
-  if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
-    lazyImages.forEach(lazyImage => lazyImageObserver.observe(lazyImage));
-  }  else {
-    console.log('~~~~~~~~~~~~~~~~~ no IntersectionObserver ~~~~~~~~~~~~~~~~~');
-    return;
-  }
-}
-
-let lazyImageObserver = new IntersectionObserver( entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      let lazyImage = entry.target;
-      lazyImage.src = lazyImage.dataset.src;
-      // lazyImage.srcset = lazyImage.dataset.srcset;
-      lazyImage.classList.remove('lazy-img');
-      lazyImageObserver.unobserve(lazyImage);
+      createFormHTML();
     }
   });
 });
@@ -97,6 +35,8 @@ fetchRestaurantFromURL = (callback) => {
       fillRestaurantHTML();
       setLazyLoadImage();
       fillMetaDesc();
+      // createFormHTML();
+      // setLazyLoadMap();
       callback(null, restaurant)
     });
   }
@@ -168,7 +108,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = () => {
+fillReviewsHTML = (callback) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -191,6 +131,9 @@ fillReviewsHTML = () => {
   const ul = document.getElementById('reviews-list');
 
   container.appendChild(ul);
+
+  // callback(null);
+      
 }
 
 
@@ -242,6 +185,74 @@ createReviewHTML = (review) => {
   return li;
 }
 
+/**
+ * Create form HTML and add it to the webpage.
+ */
+createFormHTML = () => {
+  const formContainer = document.getElementById('form-container');
+  const title = document.createElement('h2');
+  title.innerHTML = 'Write a Review';
+  title.className = 'form-title';
+  formContainer.append(title);
+
+  const form = document.createElement('form');
+  formContainer.append(form);
+
+  const ratingLabel = document.createElement('label');
+  ratingLabel.setAttribute('for','input-rating');
+  ratingLabel.innerHTML = 'Select Rating';
+  ratingLabel.className = 'form-label';
+  form.append(ratingLabel);
+
+  form.append(createRatingOptions());
+  
+  const nameLabel = document.createElement('label');
+  nameLabel.setAttribute('for','input-name');
+  nameLabel.innerHTML = 'Name';
+  nameLabel.className = 'form-label';
+  form.append(nameLabel);
+
+  const nameText = document.createElement('input');
+  nameText.className = 'form-input';
+  nameText.setAttribute('id','input-name');
+  nameText.setAttribute('type','text');
+  form.append(nameText);
+
+  const reviewLabel = document.createElement('label');
+  reviewLabel.setAttribute('for','input-name');
+  reviewLabel.innerHTML = 'Review';
+  reviewLabel.className = 'form-label';
+  form.append(reviewLabel);
+
+  const reviewText = document.createElement('textarea');
+  reviewText.className = 'form-input';
+  reviewText.setAttribute('id','input-review');
+  form.append(reviewText);
+
+  const submitButton = document.createElement('input');
+  submitButton.setAttribute('id','submit-button');
+  submitButton.setAttribute('type','submit');
+  form.append(submitButton);
+
+  return form;
+}
+
+createRatingOptions = () => {
+  let i;
+  const ratingSelect = document.createElement('select');
+  ratingSelect.className = 'form-input';
+  ratingSelect.setAttribute('id','input-rating');
+
+  for (i = 0; i < 5; i++) {
+    let ratingOptions = document.createElement('option');
+    ratingOptions.setAttribute('value', i+1);
+    ratingOptions.innerHTML = i+1;
+    ratingSelect.append(ratingOptions);
+  }
+
+  return ratingSelect;
+}
+
 
 /**
  * Add restaurant name to the breadcrumb navigation menu
@@ -273,3 +284,66 @@ getParameterByName = (name, url) => {
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
+
+/**
+ * Initialize Google map, called from HTML.
+ */
+initMap = () => {
+  const id = getParameterByName('id');
+  DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+      self.map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 16,
+        center: restaurant.latlng,
+        scrollwheel: false
+      });
+      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+    });
+}
+
+let setLazyLoadMap = () => {
+  let lazyMap = document.getElementById('map');
+
+  if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
+    lazyMapObserver.observe(lazyMap); 
+  }  else {
+    console.log('~~~~~~~~~~~~~~~~~ no IntersectionObserver ~~~~~~~~~~~~~~~~~');
+    return; 
+  }
+}
+
+let lazyMapObserver = new IntersectionObserver( entries => {
+  entries.forEach(entry => {
+    console.log('intersection ratio: ' + entry.intersectionRatio);
+    if (entry.isIntersecting) {
+      let lazyMap = entry.target;
+      var mapsJS = document.createElement('script');
+      mapsJS.src = 'https://maps.googleapis.com/maps/api/js?callback=initMap&key=AIzaSyDEwOJQAdsxaQFqXkFTvxAWQaOkF_j4Lo8';
+      document.getElementsByTagName('head')[0].appendChild(mapsJS);
+      lazyMap.classList.remove('lazy-map');
+      lazyMapObserver.unobserve(lazyMap);
+    }
+  })
+});
+
+let setLazyLoadImage = () => {
+  let lazyImages = [].slice.call(document.querySelectorAll('img.lazy-img'));
+
+  if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
+    lazyImages.forEach(lazyImage => lazyImageObserver.observe(lazyImage));
+  }  else {
+    console.log('~~~~~~~~~~~~~~~~~ no IntersectionObserver ~~~~~~~~~~~~~~~~~');
+    return;
+  }
+}
+
+let lazyImageObserver = new IntersectionObserver( entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      let lazyImage = entry.target;
+      lazyImage.src = lazyImage.dataset.src;
+      // lazyImage.srcset = lazyImage.dataset.srcset;
+      lazyImage.classList.remove('lazy-img');
+      lazyImageObserver.unobserve(lazyImage);
+    }
+  });
+});

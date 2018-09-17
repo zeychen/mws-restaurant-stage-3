@@ -226,12 +226,12 @@ let setLazyLoadMap = () => {
 let lazyMapObserver = new IntersectionObserver( entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-    let lazyMap = entry.target;
-    var mapsJS = document.createElement('script');
-    mapsJS.src = 'https://maps.googleapis.com/maps/api/js?callback=initMap&key=AIzaSyDEwOJQAdsxaQFqXkFTvxAWQaOkF_j4Lo8';
-    document.getElementsByTagName('head')[0].appendChild(mapsJS)
-    lazyMapObserver.unobserve(lazyMap);
-  }
+      let lazyMap = entry.target;
+      var mapsJS = document.createElement('script');
+      mapsJS.src = 'https://maps.googleapis.com/maps/api/js?callback=initMap&key=AIzaSyDEwOJQAdsxaQFqXkFTvxAWQaOkF_j4Lo8';
+      document.getElementsByTagName('head')[0].appendChild(mapsJS)
+      lazyMapObserver.unobserve(lazyMap);
+    }
   })
 });
 /**
