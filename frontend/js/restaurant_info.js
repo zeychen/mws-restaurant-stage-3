@@ -35,8 +35,6 @@ fetchRestaurantFromURL = (callback) => {
       fillRestaurantHTML();
       setLazyLoadImage();
       fillMetaDesc();
-      // createFormHTML();
-      // setLazyLoadMap();
       callback(null, restaurant)
     });
   }
@@ -161,7 +159,8 @@ createReviewHTML = (review) => {
   rev.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  // date.innerHTML = review.date;
+  date.innerHTML = new Date(review.updatedAt).toDateString();
   date.className = 'reviewDate';
   date.setAttribute('aria-label','review date');
   rev.appendChild(date);
@@ -190,12 +189,12 @@ createReviewHTML = (review) => {
  */
 createFormHTML = () => {
   const formContainer = document.getElementById('form-container');
-  const title = document.createElement('h2');
+  const title = document.getElementById('form-title');
   title.innerHTML = 'Write a Review';
-  title.className = 'form-title';
   formContainer.append(title);
 
-  const form = document.createElement('form');
+  const form = document.getElementById('review-form');
+  // form.setAttribute('method', 'post');
   formContainer.append(form);
 
   const ratingLabel = document.createElement('label');
@@ -214,6 +213,7 @@ createFormHTML = () => {
 
   const nameText = document.createElement('input');
   nameText.className = 'form-input';
+  nameText.setAttribute('name', 'name');
   nameText.setAttribute('id','input-name');
   nameText.setAttribute('type','text');
   form.append(nameText);
@@ -226,6 +226,7 @@ createFormHTML = () => {
 
   const reviewText = document.createElement('textarea');
   reviewText.className = 'form-input';
+  reviewText.setAttribute('name', 'comments');
   reviewText.setAttribute('id','input-review');
   form.append(reviewText);
 
@@ -234,13 +235,14 @@ createFormHTML = () => {
   submitButton.setAttribute('type','submit');
   form.append(submitButton);
 
-  return form;
+  return formContainer;
 }
 
 createRatingOptions = () => {
   let i;
   const ratingSelect = document.createElement('select');
   ratingSelect.className = 'form-input';
+  ratingSelect.setAttribute('name', 'rating');
   ratingSelect.setAttribute('id','input-rating');
 
   for (i = 0; i < 5; i++) {
@@ -252,6 +254,27 @@ createRatingOptions = () => {
 
   return ratingSelect;
 }
+
+
+const reviewForm = document.getElementById('review-form');
+reviewForm.addEventListener('submit', event => {
+  event.preventDefault()
+  let review = {'restaurant_id': self.restaurant.id};
+  let data = new FormData(reviewForm);  // get values from form
+  for(var [key, value] of data.entries()) {
+    review[key] = value;  // save form values to review
+  }
+  DBReviews.submitReviews(review)
+    .then(data => {
+      // append comment to page and reset form
+      const ul = document.getElementById('reviews-list');
+      ul.appendChild(createReviewHTML(review));
+      form.reset();
+    })
+    .catch( error => {
+      console.log(error);
+    })
+})
 
 
 /**
@@ -313,7 +336,7 @@ let setLazyLoadMap = () => {
 
 let lazyMapObserver = new IntersectionObserver( entries => {
   entries.forEach(entry => {
-    console.log('intersection ratio: ' + entry.intersectionRatio);
+    // console.log('intersection ratio: ' + entry.intersectionRatio);
     if (entry.isIntersecting) {
       let lazyMap = entry.target;
       var mapsJS = document.createElement('script');
