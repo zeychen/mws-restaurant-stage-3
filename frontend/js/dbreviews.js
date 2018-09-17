@@ -12,7 +12,7 @@ class DBReviews {
    */
   static get DATABASE_URL() {
     const port = 1337 // Change this to your server port
-    return `http://localhost:${port}/reviews`;
+    return `http://localhost:${port}/reviews/`;
   }
 
   /**
@@ -115,6 +115,7 @@ class DBReviews {
   static fetchReviewsByRestaurant(id, callback) {
     // fetch all reviews from a restaurant with proper error handling.
     DBReviews.fetchReviews((error, reviews) => {
+      console.log(reviews);
       if (error) {
         callback(error, null);
       } else {
@@ -160,8 +161,8 @@ class DBReviews {
                 db.close();
             };
           }
-
         })
     })
+    .catch( error => console.log('Something went wrong with the submission. Error: ' + error))
   }
 }

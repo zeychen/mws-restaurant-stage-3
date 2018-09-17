@@ -268,8 +268,10 @@ reviewForm.addEventListener('submit', event => {
     .then(data => {
       // append comment to page and reset form
       const ul = document.getElementById('reviews-list');
+      review.createdAt = + new Date();
+      review.updatedAt = + new Date();
       ul.appendChild(createReviewHTML(review));
-      form.reset();
+      reviewForm.reset();
     })
     .catch( error => {
       console.log(error);
