@@ -13,8 +13,7 @@ var urlsToCache = [
   './js/dbhelper.js',
   './js/main.js',
   './js/restaurant_info.js',
-  './js/sw_registration.js',
-  './js/optimization.js'
+  './js/sw_registration.js'
 ];
 
 // install cache

@@ -92,6 +92,10 @@ class DBReviews {
         }
         response.json().then(data => {
           DBReviews.createDB(data);  // Cache reviews in IDB
+          // DBReviews.fetchReviewsByRestaurant(data.restaurant_id,(error, restaurant) => {
+          //   self.restaurant = restaurant;
+          //   console.log('restaurant: ' + restaurant);
+          // })
           callback(null,data);
         })
       })
@@ -102,53 +106,27 @@ class DBReviews {
             callback(null, reviews);
           }
         })
-      })
-
-    // let xhr = new XMLHttpRequest();
-
-    // if(navigator.onLine) {
-    //   xhr.open('GET', DBHelper.DATABASE_URL);
-    
-    //   xhr.onload = function() {
-    //     if (xhr.status === 200) { // Got a success response from server!
-    //       const restaurantsJSON = JSON.parse(xhr.responseText);
-    //       DBHelper.createDB(restaurantsJSON); // Cache restaurant in IDB
-    //       callback(null, restaurantsJSON);
-    //     } else { // Oops!. Got an error from server.
-    //       const error = (`Request failed. Returned status of ${xhr.status}`);
-    //       callback(error, null);
-    //     }
-    //   };
-    //   xhr.send();
-    // } else {
-    //   console.log("Unable to reach server. Currently using cached data.")
-    //   DBHelper.getCachedData(function(error, restaurants){
-    //     if(restaurants.length > 0){          
-    //       callback(null, restaurants);
-    //     }
-    //   })
-    // }
-    
+      })   
   }
 
-//   /**
-//    * Fetch a restaurant by its ID.
-//    */
-//   static fetchReviewsById(id, callback) {
-//     // fetch all reviews from a restaurant with proper error handling.
-//     DBReviews.fetchReviews((error, restaurants) => {
-//       if (error) {
-//         callback(error, null);
-//       } else {
-//         const restaurant = restaurants.find(r => r.id == id);
-//         if (restaurant) { // Got the restaurant
-//           callback(null, restaurant);
-//         } else { // Restaurant does not exist in the database
-//           callback('Restaurant does not exist', null);
-//         }
-//       }
-//     });
-//   }
+  /**
+   * Fetch reviews by restaurant.
+   */
+  static fetchReviewsByRestaurant(id, callback) {
+    // fetch all reviews from a restaurant with proper error handling.
+    DBReviews.fetchReviews((error, reviews) => {
+      if (error) {
+        callback(error, null);
+      } else {
+        const reviewList = reviews.filter(r => r.restaurant_id == id);
+        if(reviewList) {
+          callback(null, reviewList);
+        } else {
+          callback('Restaurant does not exist', null);
+        }
+      }
+    });
+  }
 
 //   /**
 //    * Fetch restaurants by a cuisine type with proper error handling.

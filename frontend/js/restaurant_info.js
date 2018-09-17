@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      console.log("there's a map!");
       setLazyLoadMap();
     }
   });
@@ -19,7 +18,6 @@ initMap = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      console.log('there"s a map!');
       self.map = new google.maps.Map(document.getElementById('map'), {
         zoom: 16,
         center: restaurant.latlng,
@@ -163,6 +161,8 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   }
 }
 
+
+
 /**
  * Create all reviews HTML and add them to the webpage.
  */
@@ -173,24 +173,21 @@ fillReviewsHTML = () => {
   title.setAttribute('id','reviews-header');
   container.appendChild(title);
 
-  DBReviews.fetchReviews((error, reviews) => {
+  const id = getParameterByName('id');
+  DBReviews.fetchReviewsByRestaurant(id, (error, reviews) => {
     self.reviews = reviews;
-      if (!reviews) {
-        console.error(error);
-        return;
-      }
-      console.log('reviews: ' + reviews);
+    if (!reviews) {
+      const noReviews = document.createElement('p');
+      noReviews.innerHTML = 'No reviews yet!';
+      container.appendChild(noReviews);
+      return;
+    }
+    reviews.forEach(review => {
+      ul.appendChild(createReviewHTML(review));
+    });
   });
-  // if (!reviews) {
-  //   const noReviews = document.createElement('p');
-  //   noReviews.innerHTML = 'No reviews yet!';
-  //   container.appendChild(noReviews);
-  //   return;
-  // }
   const ul = document.getElementById('reviews-list');
-  // reviews.forEach(review => {
-  //   ul.appendChild(createReviewHTML(review));
-  // });
+
   container.appendChild(ul);
 }
 
