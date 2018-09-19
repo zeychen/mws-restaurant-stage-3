@@ -509,13 +509,14 @@ form {
 		width: 100%
 	}
 	#restaurant-container,
-	#reviews-container {
+	#reviews-container,
+	#form-container {
 		width: 50%
 	}
 	#restaurant-container {
 		margin-top: 144px
 	}
-	#reviews-container {
+	#form-container {
 		margin-bottom: 65px
 	}
 }

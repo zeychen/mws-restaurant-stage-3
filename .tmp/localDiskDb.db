@@ -847,24 +847,6 @@
       {
         "restaurant_id": 1,
         "rating": "1",
-        "name": "we",
-        "comments": "1231asfasd",
-        "createdAt": "2018-09-19T21:26:33.958Z",
-        "updatedAt": "2018-09-19T21:26:33.958Z",
-        "id": 70
-      },
-      {
-        "restaurant_id": 1,
-        "rating": "1",
-        "name": "we",
-        "comments": "1231asfasd",
-        "createdAt": "2018-09-19T21:26:33.958Z",
-        "updatedAt": "2018-09-19T21:26:33.958Z",
-        "id": 70
-      },
-      {
-        "restaurant_id": 1,
-        "rating": "1",
         "name": "asdfsadf",
         "comments": "sadfsadfwerew",
         "createdAt": "2018-09-19T21:29:08.261Z",

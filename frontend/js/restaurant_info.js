@@ -219,7 +219,7 @@ createFormHTML = () => {
   form.append(nameText);
 
   const reviewLabel = document.createElement('label');
-  reviewLabel.setAttribute('for','input-name');
+  reviewLabel.setAttribute('for','input-review');
   reviewLabel.innerHTML = 'Review';
   reviewLabel.className = 'form-label';
   form.append(reviewLabel);
