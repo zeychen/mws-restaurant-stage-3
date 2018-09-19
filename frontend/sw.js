@@ -11,6 +11,7 @@ var urlsToCache = [
   './restaurant.html',
   './css/styles.css',
   './js/dbhelper.js',
+  './js/dbreviews.js',
   './js/main.js',
   './js/restaurant_info.js',
   './js/sw_registration.js'
@@ -72,6 +73,7 @@ self.addEventListener('fetch', function(event) {
     })
   );
 });
+
   
 function serveCache(request) {
   return caches.open(staticCacheName).then(function(cache) {

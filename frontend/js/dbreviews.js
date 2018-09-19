@@ -34,6 +34,10 @@ class DBReviews {
       var db = dbPromise.result;
       var store = db.createObjectStore("ReviewsObjectStore", {keyPath: "id"});
       var index = store.createIndex("by-id", "id");
+
+      var offlineStore = db.createObjectStore("OfflineReviewsOS", {keyPath: "createdAt"});
+      offlineStore.createIndex("restaurant_id", "restaurant_id");
+      console.log('offline store: '+offlineStore);
     }
 
     dbPromise.onerror = () => {
@@ -60,8 +64,8 @@ class DBReviews {
   
   static getCachedData(callback){
     // Start a new DB transaction
-    var dbPromise = DBHelper.openDB();
-    dbPromise.onsuccess = function() {
+    var dbPromise = DBReviews.openDB();
+    dbPromise.onsuccess = () => {
       var db = dbPromise.result;
       var tx = db.transaction("ReviewsObjectStore", "readwrite");
       var store = tx.objectStore("ReviewsObjectStore");
@@ -92,16 +96,13 @@ class DBReviews {
         }
         response.json().then(data => {
           DBReviews.createDB(data);  // Cache reviews in IDB
-          // DBReviews.fetchReviewsByRestaurant(data.restaurant_id,(error, restaurant) => {
-          //   self.restaurant = restaurant;
-          //   console.log('restaurant: ' + restaurant);
-          // })
           callback(null,data);
         })
       })
       .catch(error => {
         console.log('Failed to fetch reviews. Currently using cached data.');
         DBReviews.getCachedData((error, reviews) => {
+          console.log(reviews);
           if(reviews.length > 0) {
             callback(null, reviews);
           }
@@ -115,7 +116,7 @@ class DBReviews {
   static fetchReviewsByRestaurant(id, callback) {
     // fetch all reviews from a restaurant with proper error handling.
     DBReviews.fetchReviews((error, reviews) => {
-      console.log(reviews);
+      // console.log(reviews);
       if (error) {
         callback(error, null);
       } else {
@@ -129,9 +130,7 @@ class DBReviews {
     });
   }
 
-  /**
-   * Submit reviews.
-   */
+
   static submitReviews(reviewData) {
     return fetch(DBReviews.DATABASE_URL, {
       method: 'POST',
@@ -140,27 +139,49 @@ class DBReviews {
       referrer: 'no-referrer',
       credentials: 'same-origin',
       headers: {
-        'content-type': 'application/json'
+        Accept: "application/json",
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(reviewData)
     })
     .then(response => {
       response.json()
         .then( data => {
-          var dbPromise = DBReviews.openDB();
-          dbPromise.onsuccess = () => {
-            // Start a new DB transaction
-            var db = dbPromise.result;
-            var tx = db.transaction("ReviewsObjectStore", "readwrite");
-            var store = tx.objectStore("ReviewsObjectStore");
+          const dbPromise = DBReviews.openDB();
+          if(navigator.onLine){
 
-            store.put(data);
+              console.log('online: ' + data);
+            dbPromise.onsuccess = () => {
+              // Start a new DB transaction
+              const db = dbPromise.result;
+              const tx = db.transaction("ReviewsObjectStore", "readwrite");
+              const store = tx.objectStore("ReviewsObjectStore");
 
-            // Close the db when the transaction is done
-            tx.oncomplete = event => {
+              store.put(data);
+
+              // Close the db when the transaction is done
+              tx.oncomplete = event => {
                 db.close();
+              };
+              return data;
             };
-          }
+          } else {
+            dbPromise.onsuccess = () => {
+              console.log('offline: ' + data);
+              // Start a new DB transaction
+              const db = dbPromise.result;
+              const tx = db.transaction("OfflineReviewsOS", "readwrite");
+              const store = tx.objectStore("OfflineReviewsOS");
+
+              store.put(data);
+
+              // Close the db when the transaction is done
+              tx.oncomplete = event => {
+                db.close();
+              };
+              return data;
+            };
+          }          
         })
     })
     .catch( error => console.log('Something went wrong with the submission. Error: ' + error))
